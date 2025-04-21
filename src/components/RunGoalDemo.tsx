@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { RunData } from '@/types/run';
 import { GoalData } from '@/types/goal';
 import { supabase } from '@/lib/supabase';
@@ -14,11 +14,7 @@ export function RunGoalDemo() {
   const [goals, setGoals] = useState<GoalData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, [userId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -30,6 +26,7 @@ export function RunGoalDemo() {
         
       if (runsError) {
         console.error('Error fetching runs:', runsError);
+        toast.error('Error loading runs');
         return;
       }
 
@@ -41,9 +38,11 @@ export function RunGoalDemo() {
 
       if (goalsError) {
         console.error('Error fetching goals:', goalsError);
+        toast.error('Error loading goals');
         return;
       }
 
+      // Map database records to our application types
       setRuns(runsData.map(run => ({
         id: run.id,
         userId: run.user_id,
@@ -70,7 +69,11 @@ export function RunGoalDemo() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleDeleteRun = async (runId: string) => {
     try {

@@ -14,6 +14,10 @@ export function GoalsList({ goals, loading }: GoalsListProps) {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const formatDate = (date: Date | string): string => {
+    return new Date(date).toLocaleDateString();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -32,7 +36,7 @@ export function GoalsList({ goals, loading }: GoalsListProps) {
             {goals.map(goal => (
               <li key={goal.id} className="border rounded-md p-3">
                 <div className="flex justify-between">
-                  <span className="font-medium">Goal for {new Date(goal.targetDate).toLocaleDateString()}</span>
+                  <span className="font-medium">Goal for {formatDate(goal.targetDate)}</span>
                   <span className={`text-sm px-2 py-1 rounded-full ${
                     goal.status === 'Active' 
                       ? 'bg-blue-100 text-blue-800' 

@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { RunData } from '@/types/run';
 import { GoalData } from '@/types/goal';
 import { processAutomaticGoalGeneration } from '@/utils/goalGenerator';
@@ -19,12 +18,12 @@ export function useGoalGeneration({
 }: UseGoalGenerationProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [newGoal, setNewGoal] = useState<GoalData | null>(null);
+  const processedRef = useRef(false);
   
-  // This effect will run whenever runs or goals change,
-  // potentially generating a new goal if conditions are met
+  // This effect will run only once per component mount
   useEffect(() => {
-    // Skip if we're already processing
-    if (isProcessing) return;
+    // Skip if we're already processing or have processed
+    if (isProcessing || processedRef.current) return;
     
     // Check if we have enough data
     if (!userId || !runs.length) return;
@@ -32,17 +31,25 @@ export function useGoalGeneration({
     setIsProcessing(true);
     
     try {
-      // Run our goal generation logic
-      const generatedGoal = processAutomaticGoalGeneration(userId, runs, goals);
+      // Check if there's already an active goal
+      const hasActive = goals.some(goal => goal.status === 'Active');
       
-      if (generatedGoal) {
-        setNewGoal(generatedGoal);
+      if (!hasActive) {
+        // Run our goal generation logic
+        const generatedGoal = processAutomaticGoalGeneration(userId, runs, goals);
         
-        // Call the callback if provided
-        if (onGoalGenerated) {
-          onGoalGenerated(generatedGoal);
+        if (generatedGoal) {
+          setNewGoal(generatedGoal);
+          
+          // Call the callback if provided
+          if (onGoalGenerated) {
+            onGoalGenerated(generatedGoal);
+          }
         }
       }
+      
+      // Mark as processed so we don't keep generating goals
+      processedRef.current = true;
     } catch (error) {
       console.error("Error generating goal:", error);
     } finally {
@@ -50,7 +57,7 @@ export function useGoalGeneration({
     }
   }, [userId, runs, goals, onGoalGenerated, isProcessing]);
   
-  // Manually trigger goal generation
+  // Manually trigger goal generation - only used when explicitly called
   const checkAndGenerateGoal = () => {
     if (isProcessing) return;
     

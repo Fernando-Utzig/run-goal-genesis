@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { RunData } from '@/types/run';
 import { GoalData } from '@/types/goal';
 import { useGoalGeneration } from '@/hooks/useGoalGeneration';
@@ -22,12 +22,21 @@ export function RunCompletionHandler({
 }: RunCompletionHandlerProps) {
   const [showAlert, setShowAlert] = useState(false);
   const [newGoal, setNewGoal] = useState<GoalData | null>(null);
+  const savedGoalRef = useRef<string | null>(null);
 
   // Handle goal generation
   const handleGoalGenerated = async (generatedGoal: GoalData) => {
     try {
+      // Check if we've already processed this goal (preventing duplicates)
+      if (savedGoalRef.current === generatedGoal.id) {
+        return;
+      }
+      
       // Save the generated goal
       const savedGoal = await saveGoal(generatedGoal);
+      
+      // Store reference to prevent duplicate processing
+      savedGoalRef.current = savedGoal.id;
       
       // Update state
       setNewGoal(savedGoal);
@@ -38,7 +47,7 @@ export function RunCompletionHandler({
         onGoalSaved(savedGoal);
       }
       
-      // Show toast notification
+      // Show toast notification - only once
       toast('New goal created!', {
         description: `We've set a new target for you: ${savedGoal.targetDistance.toFixed(2)}km at a pace of ${formatPace(savedGoal.targetPace)}/km by ${formatDate(savedGoal.targetDate)}.`
       });
