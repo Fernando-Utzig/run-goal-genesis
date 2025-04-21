@@ -1,5 +1,7 @@
 
 import { RunGoalDemo } from "@/components/RunGoalDemo";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -8,6 +10,11 @@ const Index = () => {
         <div className="container mx-auto py-4">
           <h1 className="text-2xl font-bold text-gray-900">Run Goal Genesis</h1>
           <p className="text-gray-600">Automatically generate challenging running goals</p>
+          <div className="mt-4">
+            <Button asChild className="bg-[#007bff] hover:bg-[#0056b3]">
+              <Link to="/log-run">Log a New Run</Link>
+            </Button>
+          </div>
         </div>
       </header>
       
