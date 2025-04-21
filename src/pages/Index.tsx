@@ -2,11 +2,12 @@
 import { RunGoalDemo } from "@/components/RunGoalDemo";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Dashboard } from "@/components/Dashboard";
+import { Navbar } from "@/components/Navbar";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50">
+      <Navbar />
       <header className="bg-white shadow-sm">
         <div className="container mx-auto py-4">
           <h1 className="text-2xl font-bold text-gray-900">Run Goal Genesis</h1>
@@ -20,7 +21,6 @@ const Index = () => {
       </header>
       
       <main className="container mx-auto py-8">
-        <Dashboard />
         <div className="mt-8">
           <RunGoalDemo />
         </div>
