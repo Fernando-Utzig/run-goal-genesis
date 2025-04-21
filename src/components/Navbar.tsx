@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export function Navbar() {
   return (
-    <nav className="bg-[#F97316] shadow-sm">
+    <nav className="bg-[#212052] shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -13,13 +13,13 @@ export function Navbar() {
             </Link>
           </div>
           <div className="flex space-x-4">
-            <Button asChild variant="ghost" className="text-white hover:text-white hover:bg-[#FB923C]">
+            <Button asChild variant="ghost" className="text-white hover:text-white hover:bg-[#2e2c73]">
               <Link to="/">Home</Link>
             </Button>
-            <Button asChild variant="ghost" className="text-white hover:text-white hover:bg-[#FB923C]">
+            <Button asChild variant="ghost" className="text-white hover:text-white hover:bg-[#2e2c73]">
               <Link to="/dashboard">Dashboard</Link>
             </Button>
-            <Button asChild variant="ghost" className="text-white hover:text-white hover:bg-[#FB923C]">
+            <Button asChild variant="ghost" className="text-white hover:text-white hover:bg-[#2e2c73]">
               <Link to="/log-run">Log Run</Link>
             </Button>
           </div>

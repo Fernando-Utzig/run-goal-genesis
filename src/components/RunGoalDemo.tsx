@@ -18,6 +18,7 @@ export function RunGoalDemo() {
     try {
       setLoading(true);
       
+      // Fetch runs data
       const { data: runsData, error: runsError } = await supabase
         .from('runs')
         .select('*')
@@ -30,6 +31,7 @@ export function RunGoalDemo() {
         return;
       }
 
+      // Fetch goals data
       const { data: goalsData, error: goalsError } = await supabase
         .from('goals')
         .select('*')
@@ -41,6 +43,8 @@ export function RunGoalDemo() {
         toast.error('Error loading goals');
         return;
       }
+
+      console.log("Goals data from Supabase:", goalsData);
 
       // Map database records to our application types
       setRuns(runsData.map(run => ({
