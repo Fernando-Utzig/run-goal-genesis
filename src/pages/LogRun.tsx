@@ -22,9 +22,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 const formSchema = z.object({
   distance: z.number().min(0.01, "Distance must be greater than 0"),
@@ -62,7 +63,6 @@ const LogRun = () => {
       const { error } = await supabase
         .from('runs')
         .insert([{
-          userId: 'user-1', // This should come from auth context in a real app
           distance: data.distance,
           duration: durationToSeconds(data.duration),
           date: data.date.toISOString(),
@@ -75,6 +75,16 @@ const LogRun = () => {
       toast('Success!', {
         description: 'Your run has been logged.',
       });
+      
+      // Reset form after successful submission
+      form.reset({
+        distance: undefined,
+        duration: "00:00:00",
+        date: new Date(),
+        notes: "",
+      });
+      setCalculatedPace("");
+      
     } catch (error) {
       console.error('Error saving run:', error);
       toast('Error', {
@@ -101,6 +111,15 @@ const LogRun = () => {
   return (
     <div className="min-h-screen bg-[#F0F0F0]">
       <div className="container mx-auto py-8">
+        <div className="flex items-center mb-6">
+          <Button asChild variant="ghost" className="mr-2">
+            <Link to="/">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to Home
+            </Link>
+          </Button>
+        </div>
+        
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Log a New Run</h1>
         
         <div className="bg-white rounded-lg shadow-sm p-6 max-w-md mx-auto">
@@ -119,9 +138,10 @@ const LogRun = () => {
                         placeholder="5.0"
                         {...field}
                         onChange={(e) => {
-                          field.onChange(parseFloat(e.target.value));
+                          field.onChange(parseFloat(e.target.value) || undefined);
                           handleInputChange();
                         }}
+                        value={field.value ?? ""}
                       />
                     </FormControl>
                     <FormMessage />
