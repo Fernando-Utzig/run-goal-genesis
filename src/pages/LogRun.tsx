@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 import {
   Popover,
   PopoverContent,
@@ -57,26 +59,26 @@ const LogRun = () => {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      const { data: result } = await supabase.from('runs').insert([
-        {
+      const { error } = await supabase
+        .from('runs')
+        .insert([{
           userId: 'user-1', // This should come from auth context in a real app
           distance: data.distance,
           duration: durationToSeconds(data.duration),
           date: data.date.toISOString(),
           notes: data.notes,
           status: 'Completed'
-        }
-      ]).select();
+        }]);
 
-      toast({
-        title: "Success!",
-        description: "Your run has been logged.",
+      if (error) throw error;
+
+      toast('Success!', {
+        description: 'Your run has been logged.',
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save run. Please try again.",
-        variant: "destructive",
+      console.error('Error saving run:', error);
+      toast('Error', {
+        description: 'Failed to save run. Please try again.',
       });
     }
   };
