@@ -1,14 +1,14 @@
 
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-interface DistanceChartProps {
+interface SpeedChartProps {
   data: Array<{
     date: string;
-    distance: number;
+    speed: number;
   }>;
 }
 
-export function DistanceChart({ data }: DistanceChartProps) {
+export function SpeedChart({ data }: SpeedChartProps) {
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -25,15 +25,15 @@ export function DistanceChart({ data }: DistanceChartProps) {
             fontSize={12}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => `${value}km`}
+            tickFormatter={(value) => `${value.toFixed(1)} km/h`}
           />
           <Tooltip />
           <Line
             type="monotone"
-            dataKey="distance"
-            stroke="#007bff"
+            dataKey="speed"
+            stroke="#2563eb"
             strokeWidth={2}
-            dot={{ fill: "#007bff" }}
+            dot={{ fill: "#2563eb" }}
           />
         </LineChart>
       </ResponsiveContainer>

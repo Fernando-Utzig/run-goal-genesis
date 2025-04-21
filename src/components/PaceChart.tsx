@@ -1,14 +1,14 @@
 
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-interface DistanceChartProps {
+interface PaceChartProps {
   data: Array<{
     date: string;
-    distance: number;
+    pace: number;
   }>;
 }
 
-export function DistanceChart({ data }: DistanceChartProps) {
+export function PaceChart({ data }: PaceChartProps) {
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -25,15 +25,20 @@ export function DistanceChart({ data }: DistanceChartProps) {
             fontSize={12}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => `${value}km`}
+            tickFormatter={(value) => `${Math.floor(value / 60)}:${(value % 60).toString().padStart(2, '0')}`}
           />
-          <Tooltip />
+          <Tooltip 
+            formatter={(value: number) => [
+              `${Math.floor(value / 60)}:${(value % 60).toString().padStart(2, '0')} min/km`,
+              "Pace"
+            ]}
+          />
           <Line
             type="monotone"
-            dataKey="distance"
-            stroke="#007bff"
+            dataKey="pace"
+            stroke="#16a34a"
             strokeWidth={2}
-            dot={{ fill: "#007bff" }}
+            dot={{ fill: "#16a34a" }}
           />
         </LineChart>
       </ResponsiveContainer>
