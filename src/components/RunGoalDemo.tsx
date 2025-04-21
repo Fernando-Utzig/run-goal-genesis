@@ -4,10 +4,10 @@ import { RunData } from '@/types/run';
 import { GoalData } from '@/types/goal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { completeRun, fetchUserGoals, fetchUserRuns } from '@/services/runGoalService';
+import { completeRun, fetchUserGoals } from '@/services/runGoalService';
 import { RunCompletionHandler } from '@/components/RunCompletionHandler';
+import { supabase } from '@/lib/supabase';
 
-// Demo component to showcase the automatic goal generation
 export function RunGoalDemo() {
   const [userId] = useState('user-1'); // In a real app, this would come from authentication
   const [runs, setRuns] = useState<RunData[]>([]);
@@ -20,12 +20,31 @@ export function RunGoalDemo() {
       try {
         setLoading(true);
         
-        // Fetch runs and goals
-        const userRuns = await fetchUserRuns(userId);
+        // Fetch runs from Supabase
+        const { data: runsData, error: runsError } = await supabase
+          .from('runs')
+          .select('*')
+          .eq('user_id', userId)
+          .order('date', { ascending: false });
+          
+        if (runsError) {
+          console.error('Error fetching runs:', runsError);
+          return;
+        }
+
+        // Fetch goals
         const userGoals = await fetchUserGoals(userId);
         
         // Update state
-        setRuns(userRuns);
+        setRuns(runsData.map(run => ({
+          id: run.id,
+          userId: run.user_id,
+          date: new Date(run.date),
+          distance: run.distance,
+          duration: run.duration,
+          notes: run.notes,
+          status: run.status
+        })));
         setGoals(userGoals);
       } catch (error) {
         console.error('Failed to load data:', error);
@@ -43,19 +62,39 @@ export function RunGoalDemo() {
       setLoading(true);
       
       // Create a sample run
-      const sampleRun: Partial<RunData> = {
-        userId,
+      const sampleRun = {
+        user_id: userId,
         distance: 5, // 5 km
         duration: 1800, // 30 minutes (in seconds)
-        date: new Date(),
+        date: new Date().toISOString(),
         status: 'Completed'
       };
       
-      // Save the completed run and potentially generate a goal
-      const result = await completeRun(`run-${Date.now()}`, userId);
+      // Insert the run into Supabase
+      const { data: newRun, error: insertError } = await supabase
+        .from('runs')
+        .insert([sampleRun])
+        .select()
+        .single();
+        
+      if (insertError) {
+        console.error('Failed to insert run:', insertError);
+        return;
+      }
       
-      // Update our local state
-      setRuns(prev => [...prev, result.run]);
+      // Update our local state with the new run
+      setRuns(prev => [{
+        id: newRun.id,
+        userId: newRun.user_id,
+        date: new Date(newRun.date),
+        distance: newRun.distance,
+        duration: newRun.duration,
+        notes: newRun.notes,
+        status: newRun.status
+      }, ...prev]);
+      
+      // Save the completed run and potentially generate a goal
+      const result = await completeRun(newRun.id, userId);
       
       if (result.generatedGoal) {
         setGoals(prev => [...prev, result.generatedGoal!]);
@@ -91,7 +130,9 @@ export function RunGoalDemo() {
             <CardDescription>Complete a run to trigger automatic goal generation</CardDescription>
           </CardHeader>
           <CardContent>
-            {runs.length === 0 ? (
+            {loading ? (
+              <p className="text-muted-foreground">Loading runs...</p>
+            ) : runs.length === 0 ? (
               <p className="text-muted-foreground">No runs yet</p>
             ) : (
               <ul className="space-y-2">
@@ -113,6 +154,9 @@ export function RunGoalDemo() {
                         <p>{formatPace(run.duration / run.distance)}/km</p>
                       </div>
                     </div>
+                    {run.notes && (
+                      <p className="mt-2 text-sm text-gray-600">{run.notes}</p>
+                    )}
                   </li>
                 ))}
               </ul>
