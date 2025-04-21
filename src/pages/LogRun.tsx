@@ -63,6 +63,7 @@ const LogRun = () => {
       const { error } = await supabase
         .from('runs')
         .insert([{
+          user_id: 'user-1', // Adding required user_id field
           distance: data.distance,
           duration: durationToSeconds(data.duration),
           date: data.date.toISOString(),
