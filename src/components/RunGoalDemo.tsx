@@ -2,13 +2,11 @@
 import { useState, useEffect } from 'react';
 import { RunData } from '@/types/run';
 import { GoalData } from '@/types/goal';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { completeRun, fetchUserGoals } from '@/services/runGoalService';
-import { RunCompletionHandler } from '@/components/RunCompletionHandler';
 import { supabase } from '@/lib/supabase';
-import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { RunsList } from './runs/RunsList';
+import { GoalsList } from './goals/GoalsList';
+import { RunCompletionHandler } from './RunCompletionHandler';
 
 export function RunGoalDemo() {
   const [userId] = useState('user-1');
@@ -16,7 +14,6 @@ export function RunGoalDemo() {
   const [goals, setGoals] = useState<GoalData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load initial data
   useEffect(() => {
     loadData();
   }, [userId]);
@@ -25,7 +22,6 @@ export function RunGoalDemo() {
     try {
       setLoading(true);
       
-      // Fetch runs from Supabase
       const { data: runsData, error: runsError } = await supabase
         .from('runs')
         .select('*')
@@ -37,7 +33,6 @@ export function RunGoalDemo() {
         return;
       }
 
-      // Fetch goals from Supabase
       const { data: goalsData, error: goalsError } = await supabase
         .from('goals')
         .select('*')
@@ -49,7 +44,6 @@ export function RunGoalDemo() {
         return;
       }
 
-      // Update state
       setRuns(runsData.map(run => ({
         id: run.id,
         userId: run.user_id,
@@ -95,124 +89,22 @@ export function RunGoalDemo() {
     }
   };
 
-  // Format pace from seconds to mm:ss
-  const formatPace = (paceInSeconds: number): string => {
-    const minutes = Math.floor(paceInSeconds / 60);
-    const seconds = Math.floor(paceInSeconds % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Your Running Journey</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Run section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Runs</CardTitle>
-            <CardDescription>Complete a run to trigger automatic goal generation</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <p className="text-muted-foreground">Loading runs...</p>
-            ) : runs.length === 0 ? (
-              <p className="text-muted-foreground">No runs yet</p>
-            ) : (
-              <ul className="space-y-2">
-                {runs.map(run => (
-                  <li key={run.id} className="border rounded-md p-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex justify-between">
-                          <span className="font-medium">{new Date(run.date).toLocaleDateString()}</span>
-                          <span className="text-sm px-2 py-1 bg-green-100 text-green-800 rounded-full ml-2">
-                            {run.status}
-                          </span>
-                        </div>
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          <div>
-                            <p className="text-xs text-muted-foreground">Distance</p>
-                            <p>{run.distance.toFixed(2)} km</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Pace</p>
-                            <p>{formatPace(run.duration / run.distance)}/km</p>
-                          </div>
-                        </div>
-                        {run.notes && (
-                          <p className="mt-2 text-sm text-gray-600">{run.notes}</p>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => handleDeleteRun(run.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-        
-        {/* Goals section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Goals</CardTitle>
-            <CardDescription>
-              Goals will be automatically generated when you complete a run
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <p className="text-muted-foreground">Loading goals...</p>
-            ) : goals.length === 0 ? (
-              <p className="text-muted-foreground">No goals yet</p>
-            ) : (
-              <ul className="space-y-2">
-                {goals.map(goal => (
-                  <li key={goal.id} className="border rounded-md p-3">
-                    <div className="flex justify-between">
-                      <span className="font-medium">Goal for {new Date(goal.targetDate).toLocaleDateString()}</span>
-                      <span className={`text-sm px-2 py-1 rounded-full ${
-                        goal.status === 'Active' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : goal.status === 'Completed'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {goal.status}
-                      </span>
-                    </div>
-                    <div className="mt-2 grid grid-cols-2 gap-2">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Target Distance</p>
-                        <p>{goal.targetDistance.toFixed(2)} km</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Target Pace</p>
-                        <p>{formatPace(goal.targetPace)}/km</p>
-                      </div>
-                    </div>
-                    {goal.autoGenerated && (
-                      <p className="mt-2 text-xs text-muted-foreground italic">
-                        Automatically generated
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+        <RunsList 
+          runs={runs} 
+          loading={loading} 
+          onDeleteRun={handleDeleteRun} 
+        />
+        <GoalsList 
+          goals={goals} 
+          loading={loading} 
+        />
       </div>
       
-      {/* Goal generation handler */}
       <RunCompletionHandler
         userId={userId}
         runs={runs}
