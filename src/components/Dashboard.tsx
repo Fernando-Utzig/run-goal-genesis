@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartLine, Speedometer, Clock } from "lucide-react";
+import { ChartLine, Gauge, Clock } from "lucide-react";
 import { KPICard } from "./KPICard";
 import { DistanceChart } from "./DistanceChart";
 import { SpeedChart } from "./SpeedChart";
@@ -51,7 +51,7 @@ export function Dashboard() {
         <KPICard
           title="Total Runs"
           value={totalRuns.toString()}
-          icon={Speedometer}
+          icon={Gauge}
           description="This Month"
         />
       </div>
