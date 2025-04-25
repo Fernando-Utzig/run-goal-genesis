@@ -17,8 +17,12 @@ export function useDashboardData(userId: string) {
         .gte('date', firstDayOfMonth.toISOString())
         .order('date', { ascending: true });
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching dashboard data:', error);
+        throw error;
+      }
       
+      console.log('Fetched runs:', runs);
       return runs || [];
     },
   });

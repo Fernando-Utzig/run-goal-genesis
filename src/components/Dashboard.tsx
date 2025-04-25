@@ -10,6 +10,8 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 export function Dashboard() {
   const { data: runs = [], isLoading } = useDashboardData('user-1');
 
+  console.log('Dashboard data:', runs);
+
   // Calculate KPIs
   const totalDistance = runs.reduce((sum, run) => sum + run.distance, 0);
   const totalRuns = runs.length;
@@ -24,6 +26,8 @@ export function Dashboard() {
     const speed = (run.distance / (run.duration / 3600)).toFixed(1); // km/h
     const pace = Math.round(run.duration / run.distance); // seconds per km
     
+    console.log('Processed run data:', { date, distance: run.distance, speed, pace });
+    
     return {
       date,
       distance: run.distance,
@@ -31,6 +35,10 @@ export function Dashboard() {
       pace
     };
   });
+
+  if (isLoading) {
+    return <div className="text-center p-8">Loading dashboard data...</div>;
+  }
 
   return (
     <div className="p-6 bg-[#F0F0F0] rounded-lg space-y-6">

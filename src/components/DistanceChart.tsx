@@ -9,6 +9,8 @@ interface DistanceChartProps {
 }
 
 export function DistanceChart({ data }: DistanceChartProps) {
+  console.log('DistanceChart data:', data);
+
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
