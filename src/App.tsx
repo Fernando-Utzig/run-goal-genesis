@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LogRun from "./pages/LogRun";
 import DashboardPage from "./pages/Dashboard";
+import AllRunsPage from "./pages/AllRunsPage";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/log-run" element={<LogRun />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/all-runs" element={<AllRunsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

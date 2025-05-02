@@ -22,6 +22,9 @@ export function Navbar() {
             <Button asChild variant="ghost" className="text-white hover:text-white hover:bg-[#2e2c73]">
               <Link to="/log-run">Log Run</Link>
             </Button>
+            <Button asChild variant="ghost" className="text-white hover:text-white hover:bg-[#2e2c73]">
+              <Link to="/all-runs">All Runs</Link>
+            </Button>
           </div>
         </div>
       </div>
