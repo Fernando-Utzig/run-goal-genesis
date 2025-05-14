@@ -50,6 +50,12 @@ export function RunsList({ runs, loading, onDeleteRun }: RunsListProps) {
                         <p>{formatPace(run.duration / run.distance)}/km</p>
                       </div>
                     </div>
+                    {run.location && (
+                      <div className="mt-2">
+                        <p className="text-xs text-muted-foreground">Location</p>
+                        <p className="text-sm">{run.city_name}, {run.state_name}</p>
+                      </div>
+                    )}
                     {run.notes && (
                       <p className="mt-2 text-sm text-gray-600">{run.notes}</p>
                     )}

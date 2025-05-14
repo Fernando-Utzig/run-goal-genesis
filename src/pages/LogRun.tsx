@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -22,22 +22,36 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { CalendarIcon, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { useStates, useCities } from '@/hooks/useLocationData';
 
 const formSchema = z.object({
   distance: z.number().min(0.01, "Distance must be greater than 0"),
   duration: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, "Duration must be in HH:MM:SS format"),
   date: z.date(),
   notes: z.string().optional(),
+  stateId: z.string().optional(),
+  cityId: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 const LogRun = () => {
   const [calculatedPace, setCalculatedPace] = useState<string>("");
+  const [selectedStateId, setSelectedStateId] = useState<string | null>(null);
+  
+  const { states, loading: statesLoading, error: statesError } = useStates();
+  const { cities, loading: citiesLoading, error: citiesError } = useCities(selectedStateId);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -46,8 +60,17 @@ const LogRun = () => {
       duration: "00:00:00",
       date: new Date(),
       notes: "",
+      stateId: undefined,
+      cityId: undefined,
     },
   });
+
+  // Reset city selection when state changes
+  useEffect(() => {
+    if (selectedStateId) {
+      form.setValue('cityId', undefined);
+    }
+  }, [selectedStateId, form]);
 
   const calculatePace = (distance: number, duration: string) => {
     const [hours, minutes, seconds] = duration.split(":").map(Number);
@@ -60,6 +83,10 @@ const LogRun = () => {
 
   const onSubmit = async (data: FormValues) => {
     try {
+      // Find the selected state and city objects for storing their names
+      const selectedState = states.find(state => state.id.toString() === data.stateId);
+      const selectedCity = cities.find(city => city.id.toString() === data.cityId);
+
       const { error } = await supabase
         .from('runs')
         .insert([{
@@ -68,7 +95,11 @@ const LogRun = () => {
           duration: durationToSeconds(data.duration),
           date: data.date.toISOString(),
           notes: data.notes,
-          status: 'Completed'
+          status: 'Completed',
+          state_id: data.stateId,
+          state_name: selectedState?.nome,
+          city_id: data.cityId,
+          city_name: selectedCity?.nome,
         }]);
 
       if (error) throw error;
@@ -83,8 +114,11 @@ const LogRun = () => {
         duration: "00:00:00",
         date: new Date(),
         notes: "",
+        stateId: undefined,
+        cityId: undefined,
       });
       setCalculatedPace("");
+      setSelectedStateId(null);
       
     } catch (error) {
       console.error('Error saving run:', error);
@@ -216,6 +250,90 @@ const LogRun = () => {
                         />
                       </PopoverContent>
                     </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* State Select Field */}
+              <FormField
+                control={form.control}
+                name="stateId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>State</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedStateId(value);
+                      }}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a state" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {statesLoading ? (
+                          <SelectItem value="loading" disabled>Loading states...</SelectItem>
+                        ) : statesError ? (
+                          <SelectItem value="error" disabled>Failed to load states</SelectItem>
+                        ) : (
+                          states.map((state) => (
+                            <SelectItem 
+                              key={state.id} 
+                              value={state.id.toString()}
+                            >
+                              {state.nome} ({state.sigla})
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* City Select Field */}
+              <FormField
+                control={form.control}
+                name="cityId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>City</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value}
+                      disabled={!selectedStateId || citiesLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a city" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {!selectedStateId ? (
+                          <SelectItem value="select-state" disabled>Select a state first</SelectItem>
+                        ) : citiesLoading ? (
+                          <SelectItem value="loading" disabled>Loading cities...</SelectItem>
+                        ) : citiesError ? (
+                          <SelectItem value="error" disabled>Failed to load cities</SelectItem>
+                        ) : cities.length === 0 ? (
+                          <SelectItem value="no-cities" disabled>No cities found</SelectItem>
+                        ) : (
+                          cities.map((city) => (
+                            <SelectItem 
+                              key={city.id} 
+                              value={city.id.toString()}
+                            >
+                              {city.nome}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
