@@ -20,26 +20,34 @@ export interface Database {
           notes?: string | null
           status: 'Completed' | 'In Progress' | 'Cancelled'
           created_at?: string
+          state?: string | null
+          city?: string | null
         }
         Insert: {
           id?: string
-          userId: string
+          userId?: string
+          user_id?: string
           date: string
           distance: number
           duration: number
           notes?: string | null
           status: 'Completed' | 'In Progress' | 'Cancelled'
           created_at?: string
+          state?: string | null
+          city?: string | null
         }
         Update: {
           id?: string
           userId?: string
+          user_id?: string
           date?: string
           distance?: number
           duration?: number
           notes?: string | null
           status?: 'Completed' | 'In Progress' | 'Cancelled'
           created_at?: string
+          state?: string | null
+          city?: string | null
         }
       }
       goals: {

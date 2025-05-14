@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -87,14 +86,6 @@ const LogRun = () => {
       const selectedState = states.find(state => state.id.toString() === data.stateId);
       const selectedCity = cities.find(city => city.id.toString() === data.cityId);
 
-      // Create a location string for storing in the database
-      let location = "";
-      if (selectedCity && selectedState) {
-        location = `${selectedCity.nome}, ${selectedState.nome} (${selectedState.sigla})`;
-      } else if (selectedState) {
-        location = `${selectedState.nome} (${selectedState.sigla})`;
-      }
-
       const { error } = await supabase
         .from('runs')
         .insert([{
@@ -104,9 +95,8 @@ const LogRun = () => {
           date: data.date.toISOString(),
           notes: data.notes,
           status: 'Completed',
-          state: selectedState?.nome,
-          city: selectedCity?.nome,
-          location: location, // Store combined location data
+          state: selectedState?.nome, // Use the state column
+          city: selectedCity?.nome, // Use the city column
         }]);
 
       if (error) throw error;
