@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import {
   Popover,
@@ -87,6 +87,14 @@ const LogRun = () => {
       const selectedState = states.find(state => state.id.toString() === data.stateId);
       const selectedCity = cities.find(city => city.id.toString() === data.cityId);
 
+      // Create a location string for storing in the database
+      let location = "";
+      if (selectedCity && selectedState) {
+        location = `${selectedCity.nome}, ${selectedState.nome} (${selectedState.sigla})`;
+      } else if (selectedState) {
+        location = `${selectedState.nome} (${selectedState.sigla})`;
+      }
+
       const { error } = await supabase
         .from('runs')
         .insert([{
@@ -96,15 +104,15 @@ const LogRun = () => {
           date: data.date.toISOString(),
           notes: data.notes,
           status: 'Completed',
-          state_id: data.stateId,
-          state_name: selectedState?.nome,
-          city_id: data.cityId,
-          city_name: selectedCity?.nome,
+          state: selectedState?.nome,
+          city: selectedCity?.nome,
+          location: location, // Store combined location data
         }]);
 
       if (error) throw error;
 
-      toast('Success!', {
+      toast({
+        title: 'Success!',
         description: 'Your run has been logged.',
       });
       
@@ -122,7 +130,9 @@ const LogRun = () => {
       
     } catch (error) {
       console.error('Error saving run:', error);
-      toast('Error', {
+      toast({
+        variant: "destructive",
+        title: 'Error',
         description: 'Failed to save run. Please try again.',
       });
     }
